@@ -8,11 +8,20 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     */
+    */
     public function up(): void
     {
+        Schema::create('roles', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('display_name')->nullable();
+            $table->string('description')->nullable();
+            $table->softDeletes();
+        });
+        
         Schema::create('usuarios', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('rol_id')->nullable();
             $table->string('nombre');
             $table->string('apellido_paterno')->required();
             $table->string('apellido_materno')->nullable();
@@ -23,6 +32,11 @@ return new class extends Migration
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
+
+            $table->foreign('rol_id')->references('id')
+                    ->on('roles')
+                    ->onDelete('cascade')
+                    ->onUpdate('cascade');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
@@ -39,7 +53,10 @@ return new class extends Migration
             $table->longText('payload');
             $table->integer('last_activity')->index();
         });
+
     }
+
+    
 
     /**
      * Reverse the migrations.
@@ -47,6 +64,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('usuarios');
+        Schema::dropIfExists('roles');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
     }
